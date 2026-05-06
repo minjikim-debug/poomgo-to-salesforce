@@ -1,0 +1,92 @@
+name: 품고 → Salesforce 자동 동기화
+
+on:
+  # ─────────────────────────────────────────────────────────
+  #  스케줄: 매 30분마다 자동 실행 (UTC 기준)
+  #  한국시간(KST) = UTC + 9시간
+  #  운영시간(09:00~21:00 KST) 위주로 설정하려면:
+  #    '*/30 0-12 * * 1-5'  (평일 UTC 0~12시 = KST 9~21시)
+  # ─────────────────────────────────────────────────────────
+  schedule:
+    - cron: '*/30 0-12 * * 1-5'   # 평일 KST 오전 9시 ~ 오후 9시, 30분마다
+
+  # 수동으로도 실행 가능 (GitHub 웹에서 버튼 클릭)
+  workflow_dispatch:
+    inputs:
+      force_full_sync:
+        description: '전체 재동기화 (last_sync 무시하고 처음부터)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  sync:
+    name: 동기화 실행
+    runs-on: ubuntu-latest
+
+    # last_sync.json 을 Actions Cache에 저장해서
+    # 실행할 때마다 마지막 시각을 기억합니다
+    steps:
+      # ── 1. 코드 체크아웃 ──────────────────────────────
+      - name: 코드 가져오기
+        uses: actions/checkout@v4
+
+      # ── 2. Python 환경 설정 ───────────────────────────
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # ── 3. 의존성 설치 ────────────────────────────────
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      # ── 4. 마지막 동기화 시각 캐시 복원 ──────────────
+      - name: 마지막 동기화 시각 복원
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: last_sync.json
+          key: last-sync-${{ runner.os }}
+          restore-keys: |
+            last-sync-
+
+      # ── 5. 강제 전체 재동기화 옵션 ───────────────────
+      - name: 전체 재동기화 (선택 시 last_sync.json 삭제)
+        if: ${{ github.event.inputs.force_full_sync == 'true' }}
+        run: |
+          rm -f last_sync.json
+          echo "⚠️ 전체 재동기화 모드: last_sync.json 삭제됨"
+
+      # ── 6. 동기화 실행 ────────────────────────────────
+      - name: 품고 → Salesforce 동기화
+        env:
+          # 품고 API 키 (GitHub Secrets에서 주입)
+          POOMGO_KEY_MUSTELA:  ${{ secrets.POOMGO_KEY_MUSTELA }}
+          POOMGO_KEY_BIOGAIA:  ${{ secrets.POOMGO_KEY_BIOGAIA }}
+          POOMGO_KEY_BRIOSIN:  ${{ secrets.POOMGO_KEY_BRIOSIN }}
+          # Salesforce 접속 정보 (GitHub Secrets에서 주입)
+          SF_USERNAME:         ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD:         ${{ secrets.SF_PASSWORD }}
+          SF_SECURITY_TOKEN:   ${{ secrets.SF_SECURITY_TOKEN }}
+          SF_DOMAIN:           ${{ secrets.SF_DOMAIN }}   # 운영: login | 샌드박스: test
+        run: python src/sync.py
+
+      # ── 7. 마지막 동기화 시각 캐시 저장 ──────────────
+      - name: 마지막 동기화 시각 저장
+        if: always()  # 성공/실패 관계없이 저장
+        uses: actions/cache/save@v4
+        with:
+          path: last_sync.json
+          key: last-sync-${{ runner.os }}-${{ github.run_id }}
+
+      # ── 8. 실패 알림 (선택) ───────────────────────────
+      - name: 실패 시 알림
+        if: failure()
+        run: |
+          echo "❌ 동기화 실패! GitHub Actions 로그를 확인해 주세요."
+          echo "실패 시각: $(date '+%Y-%m-%d %H:%M:%S KST' -d '+9 hours')"
