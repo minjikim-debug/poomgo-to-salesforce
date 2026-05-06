@@ -68,7 +68,7 @@ jobs:
           # 품고 API 키 (GitHub Secrets에서 주입)
           POOMGO_KEY_MUSTELA:  ${{ secrets.POOMGO_KEY_MUSTELA }}
           POOMGO_KEY_BIOGAIA:  ${{ secrets.POOMGO_KEY_BIOGAIA }}
-          POOMGO_KEY_BRIOSIN:  ${{ secrets.POOMGO_KEY_BRIOSIN }}
+          POOMGO_KEY_BRIOCHIN:  ${{ secrets.POOMGO_KEY_BRIOCHIN }}
           # Salesforce 접속 정보 (GitHub Secrets에서 주입)
           SF_USERNAME:         ${{ secrets.SF_USERNAME }}
           SF_PASSWORD:         ${{ secrets.SF_PASSWORD }}
