@@ -40,7 +40,9 @@ class PoomgoClient:
         for attempt in range(1, RETRY_LIMIT + 1):
             try:
                 response = self.session.get(url, params=params, timeout=30)
-
+                print(f"\n[DEBUG] Full URL: {response.url}") # 실제 요청된 전체 주소
+                print(f"[DEBUG] Status Code: {response.status_code}")
+                print(f"[DEBUG] Response Text: {response.text}") # 서버의 에러 메시지
                 if response.status_code == 429:
                     log.warning(
                         f"[품고] Rate Limit 초과 (시도 {attempt}/{RETRY_LIMIT}), "
