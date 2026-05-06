@@ -1,0 +1,63 @@
+name: 품고 → Salesforce 자동 동기화
+
+on:
+  schedule:
+    - cron: '*/30 0-12 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      force_full_sync:
+        description: '전체 재동기화'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  sync:
+    name: 동기화 실행
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 마지막 동기화 시각 복원
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: last_sync.json
+          key: last-sync-${{ runner.os }}
+          restore-keys: |
+            last-sync-
+
+      - name: 전체 재동기화 (선택 시 last_sync.json 삭제)
+        if: ${{ github.event.inputs.force_full_sync == 'true' }}
+        run: rm -f last_sync.json
+
+      - name: 품고 → Salesforce 동기화
+        env:
+          POOMGO_KEY_MUSTELA:  ${{ secrets.POOMGO_KEY_MUSTELA }}
+          POOMGO_KEY_BIOGAIA:  ${{ secrets.POOMGO_KEY_BIOGAIA }}
+          POOMGO_KEY_BRIOSIN:  ${{ secrets.POOMGO_KEY_BRIOSIN }}
+          SF_USERNAME:         ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD:         ${{ secrets.SF_PASSWORD }}
+          SF_SECURITY_TOKEN:   ${{ secrets.SF_SECURITY_TOKEN }}
+          SF_DOMAIN:           ${{ secrets.SF_DOMAIN }}
+        run: python src/sync.py
+
+      - name: 마지막 동기화 시각 저장
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: last_sync.json
+          key: last-sync-${{ runner.os }}-${{ github.run_id }}
