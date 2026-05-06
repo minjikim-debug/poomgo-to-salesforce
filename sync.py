@@ -65,40 +65,40 @@ def map_poomgo_to_sf(order: dict, brand_name: str) -> dict:
     """
     return {
         # 수집일자 ← 주문일시
-        "Collected_Date__c": order.get("orderDate"),
+        "REG_DATE__c": order.get("orderDate"),
 
         # 주문번호(쇼핑몰) ← 주문번호  [중복 방지용 외부 ID]
-        "Order_Number_Mall__c": order.get("orderNumber"),
+        "ORDER_ID__c": order.get("orderNumber"),
 
         # 주문번호(사방넷) ← 보조주문번호1
-        "Order_Number_Sabangnet__c": order.get("subOrderNumber1"),
+        "IDX__c": order.get("subOrderNumber1"),
 
         # 주문자 ← 주문자명
-        "Orderer_Name__c": order.get("ordererName"),
+        "USER_NAME__c": order.get("ordererName"),
 
         # 주문자 전화번호 ← 주문자 전화번호
-        "Orderer_Phone__c": order.get("ordererPhone"),
+        "USER_CEL__c": order.get("ordererPhone"),
 
         # 수취인 ← 수취인명
-        "Recipient_Name__c": order.get("recipientName"),
+        "RECEIVE_NAME__c": order.get("recipientName"),
 
         # 수취인 전화번호 ← 수취인 전화번호
-        "Recipient_Phone__c": order.get("recipientPhone"),
+        "RECEIVE_CEL__c": order.get("recipientPhone"),
 
         # 수취인 주소 ← 수취인 주소
-        "Recipient_Address__c": order.get("recipientAddress"),
+        "RECEIVE_ADDR__c": order.get("recipientAddress"),
 
         # 상품명(수집) ← 상품명
-        "Product_Name_Collected__c": order.get("productName"),
+        "PRODUCT_NAME__c": order.get("productName"),
 
         # 결제금액
-        "Payment_Amount__c": order.get("paymentAmount"),
+        "TOTAL_COST__c": order.get("paymentAmount"),
 
         # 주문 상태 (취소/반품 감지용)
-        "Order_Status__c": order.get("status"),
+        "ORDER_STATUS__c": order.get("status"),
 
         # 브랜드 구분
-        "Brand__c": brand_name,
+        "BRAND_NM__c": brand_name,
     }
 
 
