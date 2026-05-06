@@ -74,7 +74,7 @@ jobs:
           SF_PASSWORD:         ${{ secrets.SF_PASSWORD }}
           SF_SECURITY_TOKEN:   ${{ secrets.SF_SECURITY_TOKEN }}
           SF_DOMAIN:           ${{ secrets.SF_DOMAIN }}   # 운영: login | 샌드박스: test
-        run: python src/sync.py
+        run: python sync.py
 
       # ── 7. 마지막 동기화 시각 캐시 저장 ──────────────
       - name: 마지막 동기화 시각 저장
