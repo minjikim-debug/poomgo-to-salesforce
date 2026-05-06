@@ -13,7 +13,7 @@ import requests
 
 log = logging.getLogger(__name__)
 
-POOMGO_BASE_URL = "https://open.poomgo.com"
+POOMGO_BASE_URL = "https://api.poomgo.com/open-api"
 PAGE_SIZE = 100          # 한 번에 가져올 건수 (최대치)
 RETRY_LIMIT = 3          # 429 Too Many Requests 발생 시 재시도 횟수
 RETRY_WAIT_SEC = 65      # 재시도 대기 시간 (1분 + 여유)
