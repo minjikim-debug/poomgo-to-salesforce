@@ -87,7 +87,7 @@ class PoomgoClient:
         if end_date:
             params["endDate"] = end_date
 
-        return self._get("/v1/outbound/invoices", params=params)
+        return self._get("/v2/outbound/invoices", params=params)
 
     def get_all_invoices(
         self,
@@ -137,7 +137,7 @@ class PoomgoClient:
         """
         try:
             params = {"orderNumber": order_number, "pageSize": 1}
-            response = self._get("/v1/outbound/invoices", params=params)
+            response = self._get("/v2/outbound/invoices", params=params)
             data = response.get("data", [])
             if data:
                 return data[0].get("status")
