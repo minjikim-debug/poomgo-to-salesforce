@@ -53,7 +53,7 @@ jobs:
           SF_PASSWORD:         ${{ secrets.SF_PASSWORD }}
           SF_SECURITY_TOKEN:   ${{ secrets.SF_SECURITY_TOKEN }}
           SF_DOMAIN:           ${{ secrets.SF_DOMAIN }}
-        run: python src/sync.py
+        run: python sync.py
 
       - name: 마지막 동기화 시각 저장
         if: always()
