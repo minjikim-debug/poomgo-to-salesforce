@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 BRANDS = [
     {"name": "무스텔라",  "api_key": os.environ["POOMGO_KEY_MUSTELA"]},
     {"name": "바이오가이아", "api_key": os.environ["POOMGO_KEY_BIOGAIA"]},
-    {"name": "브리오신",  "api_key": os.environ["POOMGO_KEY_BRIOSIN"]},
+    {"name": "브리오신",  "api_key": os.environ["POOMGO_KEY_BRIOCHIN"]},
 ]
 
 # 마지막 동기화 시각을 저장할 파일 경로
@@ -65,37 +65,37 @@ def map_poomgo_to_sf(order: dict, brand_name: str) -> dict:
     """
     return {
         # 수집일자 ← 주문일시
-        "REG_DATE__c": order.get("orderDate"),
+        "REG_DATE__c": order.get("REG_DATE__c"),
 
         # 주문번호(쇼핑몰) ← 주문번호  [중복 방지용 외부 ID]
-        "ORDER_ID__c": order.get("orderNumber"),
+        "ORDER_ID__c": order.get("ORDER_ID__c"),
 
         # 주문번호(사방넷) ← 보조주문번호1
-        "IDX__c": order.get("subOrderNumber1"),
+        "IDX__c": order.get("IDX__c"),
 
         # 주문자 ← 주문자명
-        "USER_NAME__c": order.get("ordererName"),
+        "USER_NAME__c": order.get("USER_NAME__c"),
 
         # 주문자 전화번호 ← 주문자 전화번호
-        "USER_CEL__c": order.get("ordererPhone"),
+        "USER_CEL__c": order.get("USER_CEL__c"),
 
         # 수취인 ← 수취인명
-        "RECEIVE_NAME__c": order.get("recipientName"),
+        "RECEIVE_NAME__c": order.get("RECEIVE_NAME__c"),
 
         # 수취인 전화번호 ← 수취인 전화번호
-        "RECEIVE_CEL__c": order.get("recipientPhone"),
+        "RECEIVE_CEL__c": order.get("RECEIVE_CEL__c"),
 
         # 수취인 주소 ← 수취인 주소
-        "RECEIVE_ADDR__c": order.get("recipientAddress"),
+        "RECEIVE_ADDR__c": order.get("RECEIVE_ADDR__c"),
 
         # 상품명(수집) ← 상품명
-        "PRODUCT_NAME__c": order.get("productName"),
+        "PRODUCT_NAME__c": order.get("PRODUCT_NAME__c"),
 
         # 결제금액
-        "TOTAL_COST__c": order.get("paymentAmount"),
+        "TOTAL_COST__c": order.get("TOTAL_COST__c"),
 
         # 주문 상태 (취소/반품 감지용)
-        "ORDER_STATUS__c": order.get("status"),
+        "ORDER_STATUS__c": order.get("ORDER_STATUS__c"),
 
         # 브랜드 구분
         "BRAND_NM__c": brand_name,
