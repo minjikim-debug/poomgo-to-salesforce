@@ -1,7 +1,7 @@
 """
 품고(Poomgo) Open API 클라이언트
 - 호스트: https://open.poomgo.com
-- 인증: x-api-key 헤더
+- 인증: Authorization 헤더 (공식 문서 기준)
 - 주요 엔드포인트: GET /invoice (v2) — 출고 운송장 목록 조회
 """
 
@@ -14,9 +14,9 @@ import requests
 log = logging.getLogger(__name__)
 
 POOMGO_BASE_URL = "https://open.poomgo.com"
-PAGE_SIZE = 100          # 한 번에 가져올 건수 (최대치)
-RETRY_LIMIT = 3          # 429 Too Many Requests 발생 시 재시도 횟수
-RETRY_WAIT_SEC = 65      # 재시도 대기 시간 (1분 + 여유)
+PAGE_SIZE = 100
+RETRY_LIMIT = 3
+RETRY_WAIT_SEC = 65
 
 
 class PoomgoClient:
@@ -27,22 +27,18 @@ class PoomgoClient:
         self.session = requests.Session()
         self.session.headers.update({
             "Accept": "application/json",
-            "x-api-key": api_key,   # 품고 API Key 인증 헤더
+            "Authorization": api_key,   # ✅ 공식 문서 기준: Authorization 헤더
         })
 
     def _get(self, path: str, params: dict = None) -> dict:
-        """
-        GET 요청 공통 처리
-        - 429(Rate Limit) 발생 시 자동 재시도
-        - 4xx/5xx 오류는 예외로 처리
-        """
         url = f"{POOMGO_BASE_URL}{path}"
         for attempt in range(1, RETRY_LIMIT + 1):
             try:
                 response = self.session.get(url, params=params, timeout=30)
-                print(f"\n[DEBUG] Full URL: {response.url}") # 실제 요청된 전체 주소
+                print(f"\n[DEBUG] Full URL: {response.url}")
                 print(f"[DEBUG] Status Code: {response.status_code}")
-                print(f"[DEBUG] Response Text: {response.text}") # 서버의 에러 메시지
+                print(f"[DEBUG] Response Text: {response.text}")
+
                 if response.status_code == 429:
                     log.warning(
                         f"[품고] Rate Limit 초과 (시도 {attempt}/{RETRY_LIMIT}), "
@@ -66,42 +62,23 @@ class PoomgoClient:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> dict:
-        """
-        출고 운송장 1페이지 조회
-        
-        Parameters
-        ----------
-        page       : 페이지 번호 (1부터 시작)
-        start_date : 조회 시작일시 (예: "2024-01-01T00:00:00")
-        end_date   : 조회 종료일시 (예: "2024-01-31T23:59:59")
-        
-        Returns
-        -------
-        dict : 품고 페이지네이션 응답 (data, totalPages 등 포함)
-        """
         params = {
             "page": page,
             "pageSize": PAGE_SIZE,
-            "order": "ASC",  # 오래된 것부터 → 누락 없이 처리
+            "order": "ASC",
         }
         if start_date:
             params["startDate"] = start_date
         if end_date:
             params["endDate"] = end_date
 
-        return self._get("/open-api/v1/outbound/invoices", params=params)
+        return self._get("/invoice", params=params)   # ✅ 공식 문서 기준 엔드포인트
 
     def get_all_invoices(
         self,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> list[dict]:
-        """
-        전체 페이지를 순회하며 모든 운송장 데이터를 반환합니다.
-        
-        중복 방지는 세일즈포스 upsert 단계에서 처리하지만,
-        start_date를 마지막 동기화 시각으로 전달하면 불필요한 조회를 줄일 수 있습니다.
-        """
         all_orders = []
         page = 1
 
@@ -127,19 +104,14 @@ class PoomgoClient:
                 break
 
             page += 1
-            # Rate Limit 방지: 페이지 사이 잠깐 대기
             time.sleep(0.5)
 
         return all_orders
 
     def get_invoice_status(self, order_number: str) -> Optional[str]:
-        """
-        특정 주문번호의 현재 상태 조회 (단건)
-        취소/반품 여부 확인에 사용됩니다.
-        """
         try:
             params = {"orderNumber": order_number, "pageSize": 1}
-            response = self._get("/open-api/v1/outbound/invoices", params=params)
+            response = self._get("/invoice", params=params)   # ✅ 동일하게 수정
             data = response.get("data", [])
             if data:
                 return data[0].get("status")
