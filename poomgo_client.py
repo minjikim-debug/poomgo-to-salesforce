@@ -89,7 +89,7 @@ class PoomgoClient:
         if end_date:
             params["endDate"] = end_date
 
-        return self._get("/open-api/v2/outbound/invoices", params=params)
+        return self._get("/open-api/v1/outbound/invoices", params=params)
 
     def get_all_invoices(
         self,
