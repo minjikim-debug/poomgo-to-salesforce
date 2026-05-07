@@ -72,7 +72,7 @@ class PoomgoClient:
         if end_date:
             params["endDate"] = end_date
 
-        return self._get("/invoice", params=params)   # ✅ 공식 문서 기준 엔드포인트
+        return self._get("/v2/invoice", params=params)
 
     def get_all_invoices(
         self,
@@ -111,7 +111,7 @@ class PoomgoClient:
     def get_invoice_status(self, order_number: str) -> Optional[str]:
         try:
             params = {"orderNumber": order_number, "pageSize": 1}
-            response = self._get("/invoice", params=params)   # ✅ 동일하게 수정
+            response = self._get("/v2/invoice", params=params)
             data = response.get("data", [])
             if data:
                 return data[0].get("status")
