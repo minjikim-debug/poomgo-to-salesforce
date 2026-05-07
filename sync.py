@@ -35,7 +35,7 @@ BRANDS = [
 ]
 
 # 마지막 동기화 시각을 저장할 파일 경로
-LAST_SYNC_FILE = Path(__file__).parent.parent / "last_sync.json"
+LAST_SYNC_FILE = Path(__file__).parent / "last_sync.json"
 
 
 def load_last_sync() -> dict:
